@@ -76,13 +76,13 @@ const styles = StyleSheet.create({
   overlay: { position: 'absolute', inset: 0, alignItems: 'center', justifyContent: 'center' },
   playBtn: {
     width: 36, height: 36, borderRadius: 18,
-    backgroundColor: 'rgba(0,0,0,0.55)',
+    backgroundColor: 'rgba(3,30,60,0.55)',
     alignItems: 'center', justifyContent: 'center',
   },
   playIcon: { color: '#fff', fontSize: 14, marginLeft: 2 },
   badge: {
     position: 'absolute', bottom: 6, left: 6,
-    backgroundColor: 'rgba(0,0,0,0.55)',
+    backgroundColor: 'rgba(3,30,60,0.55)',
     borderRadius: 4, paddingHorizontal: 5, paddingVertical: 2,
   },
   badgeText: { color: '#fff', fontSize: 8, fontWeight: '800', letterSpacing: 0.5 },

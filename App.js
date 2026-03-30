@@ -48,7 +48,7 @@ export default function App() {
 
   return (
     <View style={styles.root}>
-      <StatusBar style="light" />
+      <StatusBar style="dark" />
 
       {/* ── Header ── */}
       <View style={styles.header}>

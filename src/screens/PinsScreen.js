@@ -165,7 +165,7 @@ const styles = StyleSheet.create({
   emptyTitle: { color: colors.text, fontSize: font.lg, fontWeight: '700', marginBottom: 8 },
   emptyBody: { color: colors.textDim, fontSize: font.sm, textAlign: 'center' },
 
-  backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)' },
+  backdrop: { flex: 1, backgroundColor: 'rgba(3,30,60,0.45)' },
   sheet: {
     height: SHEET_H,
     backgroundColor: colors.surface,
@@ -191,7 +191,7 @@ const styles = StyleSheet.create({
   unpinText: { color: 'rgba(255,255,255,0.85)', fontSize: font.xs, fontWeight: '600' },
 
   sheetBody: { flex: 1, padding: 14 },
-  loadingRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 20 },
+  loadingRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 20 },
   loadingText: { color: colors.textDim, fontSize: font.sm, marginLeft: 10 },
   noKeyHint: { color: colors.textDim, fontSize: font.xs, fontStyle: 'italic', marginBottom: 12 },
 

@@ -42,7 +42,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  row: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  icon: { fontSize: 16, color: '#fff' },
+  row: { flexDirection: 'row', alignItems: 'center' },
+  icon: { fontSize: 16, color: '#fff', marginRight: 6 },
   label: { color: '#fff', fontSize: font.md, fontWeight: '800', letterSpacing: 0.3 },
 });

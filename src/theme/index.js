@@ -1,17 +1,18 @@
+// Matches the HTML version's CSS variables exactly
 export const colors = {
-  bg:       '#0e0e12',
-  surface:  '#1a1a24',
-  surface2: '#24243a',
-  surface3: '#2e2e48',
-  text:     '#e8e8f0',
-  textDim:  '#9090a8',
-  accent1:  '#a855f7',
-  accent2:  '#ec4899',
+  bg:       '#ffffff',
+  surface:  '#eef5ff',
+  surface2: '#d4e7ff',
+  surface3: '#aecfff',
+  text:     '#031e3c',
+  textDim:  '#2a5f94',
+  accent1:  '#003153',
+  accent2:  '#1565d8',
   success:  '#22c55e',
   white:    '#ffffff',
 };
 
-export const gradient = ['#a855f7', '#ec4899'];
+export const gradient = ['#003153', '#1565d8'];
 
 export const radius = {
   xs:   6,
@@ -33,23 +34,23 @@ export const font = {
 
 export const shadow = {
   sm: {
-    shadowColor: '#000',
+    shadowColor: '#003153',
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.3,
-    shadowRadius: 3,
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
     elevation: 3,
   },
   md: {
-    shadowColor: '#000',
+    shadowColor: '#003153',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.4,
+    shadowOpacity: 0.14,
     shadowRadius: 8,
     elevation: 6,
   },
   lg: {
-    shadowColor: '#a855f7',
+    shadowColor: '#1565d8',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.35,
+    shadowOpacity: 0.25,
     shadowRadius: 12,
     elevation: 10,
   },

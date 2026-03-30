@@ -60,14 +60,16 @@ export default function GalleryScreen() {
                 <Text style={styles.previewPrompt} numberOfLines={3}>{preview.prompt}</Text>
               ) : null}
               <View style={styles.previewActions}>
-                <TouchableOpacity
-                  style={[styles.actionBtn, pinned.has('gi_' + preview.id) && styles.actionBtnActive]}
-                  onPress={() => togglePin({ id: 'gi_' + preview.id, type: 'gi', thumb: preview.uri, full: preview.uri, title: 'Generated Image', aspectRatio: 1 })}
-                >
-                  <Text style={styles.actionBtnText}>
-                    {pinned.has('gi_' + preview.id) ? '★  Pinned' : '☆  Pin'}
-                  </Text>
-                </TouchableOpacity>
+                <View style={styles.actionBtnWrap}>
+                  <TouchableOpacity
+                    style={[styles.actionBtn, pinned.has('gi_' + preview.id) && styles.actionBtnActive]}
+                    onPress={() => togglePin({ id: 'gi_' + preview.id, type: 'gi', thumb: preview.uri, full: preview.uri, title: 'Generated Image', aspectRatio: 1 })}
+                  >
+                    <Text style={styles.actionBtnText}>
+                      {pinned.has('gi_' + preview.id) ? '★  Pinned' : '☆  Pin'}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
                 <TouchableOpacity style={[styles.actionBtn, styles.actionBtnDelete]} onPress={() => confirmDelete(preview)}>
                   <Text style={styles.actionBtnText}>🗑  Delete</Text>
                 </TouchableOpacity>
@@ -112,7 +114,8 @@ const styles = StyleSheet.create({
     color: colors.textDim, fontSize: font.xs, fontStyle: 'italic',
     textAlign: 'center', marginTop: 12, paddingHorizontal: 32,
   },
-  previewActions: { flexDirection: 'row', gap: 12, marginTop: 16 },
+  previewActions: { flexDirection: 'row', marginTop: 16 },
+  actionBtnWrap: { marginRight: 12 },
   actionBtn: {
     paddingHorizontal: 20, paddingVertical: 10,
     borderRadius: radius.md, borderWidth: 1.5, borderColor: colors.surface2,
