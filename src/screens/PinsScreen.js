@@ -128,11 +128,12 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
     marginBottom: 6,
   },
-  tagRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 5 },
+  tagRow: { flexDirection: 'row', flexWrap: 'wrap' },
   tag: {
     paddingHorizontal: 10, paddingVertical: 4,
     borderRadius: radius.full,
     borderWidth: 1.5,
+    marginRight: 5, marginBottom: 5,
     borderColor: colors.surface2,
     backgroundColor: colors.surface,
   },

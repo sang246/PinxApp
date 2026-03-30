@@ -82,10 +82,11 @@ const styles = StyleSheet.create({
     backgroundColor: colors.accent1, alignItems: 'center',
   },
   saveBtnText: { color: '#fff', fontSize: font.md, fontWeight: '700' },
-  tagRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
+  tagRow: { flexDirection: 'row', flexWrap: 'wrap' },
   paletteTag: {
     paddingHorizontal: 12, paddingVertical: 5, borderRadius: radius.full,
     borderWidth: 1.5, borderColor: colors.accent1,
+    marginRight: 6, marginBottom: 6,
   },
   paletteTagText: { color: colors.accent1, fontSize: font.xs, fontWeight: '600' },
 });

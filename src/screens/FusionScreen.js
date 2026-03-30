@@ -23,9 +23,8 @@ export default function FusionScreen() {
 
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ['images'],
       quality: 0.8,
-      base64: false,
     });
     if (!result.canceled) setUploadedImageUri(result.assets[0].uri);
   };
@@ -84,7 +83,7 @@ export default function FusionScreen() {
         {fusionStylings.length === 0
           ? <Text style={styles.emptyTags}>No stylings added yet</Text>
           : fusionStylings.map((tag) => (
-            <TouchableOpacity key={tag} style={styles.stylingTag} onPress={() => removeFusionStyling(tag)}>
+            <TouchableOpacity key={tag} style={[styles.stylingTag, styles.tagRowItem]} onPress={() => removeFusionStyling(tag)}>
               <Text style={styles.stylingTagText}>#{tag} ✕</Text>
             </TouchableOpacity>
           ))
@@ -101,7 +100,7 @@ export default function FusionScreen() {
               return (
                 <TouchableOpacity
                   key={item.id}
-                  style={[styles.pinThumb, sel && styles.pinThumbSel]}
+                  style={[styles.pinThumb, sel && styles.pinThumbSel, styles.pinGridItem]}
                   onPress={() => toggleFusionSelect(item.id)}
                 >
                   <Image source={{ uri: item.thumb }} style={styles.pinThumbImg} resizeMode="cover" />
@@ -131,7 +130,7 @@ export default function FusionScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.bg },
-  content: { padding: 16, gap: 8 },
+  content: { padding: 16 },
   sectionLabel: {
     fontSize: font.xs, fontWeight: '800', color: colors.textDim,
     textTransform: 'uppercase', letterSpacing: 1, marginTop: 14, marginBottom: 6,
@@ -150,14 +149,16 @@ const styles = StyleSheet.create({
     borderWidth: 1.5, borderColor: colors.surface2,
     minHeight: 80, textAlignVertical: 'top',
   },
-  tagRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, minHeight: 28 },
+  tagRow: { flexDirection: 'row', flexWrap: 'wrap', minHeight: 28 },
+  tagRowItem: { marginRight: 6, marginBottom: 6 },
   emptyTags: { color: colors.textDim, fontSize: font.xs, fontStyle: 'italic' },
   stylingTag: {
     paddingHorizontal: 12, paddingVertical: 5, borderRadius: radius.full,
     backgroundColor: colors.accent1,
   },
   stylingTagText: { color: '#fff', fontSize: font.xs, fontWeight: '700' },
-  pinGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  pinGrid: { flexDirection: 'row', flexWrap: 'wrap' },
+  pinGridItem: { marginRight: 8, marginBottom: 8 },
   pinThumb: {
     width: 64, height: 64, borderRadius: radius.sm,
     overflow: 'hidden', borderWidth: 2, borderColor: colors.surface2,
