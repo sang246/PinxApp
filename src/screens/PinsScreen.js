@@ -3,9 +3,10 @@ import {
   View, Text, ScrollView, TouchableOpacity, Image,
   Modal, ActivityIndicator, StyleSheet, Dimensions,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useStore } from '../store';
 import { analyseImageTags } from '../services/api';
-import { colors, font, radius } from '../theme';
+import { colors, font, radius, gradient } from '../theme';
 import ImageTile from '../components/ImageTile';
 
 const { width: SCREEN_W, height: SCREEN_H } = Dimensions.get('window');
@@ -84,14 +85,16 @@ export default function PinsScreen() {
           {selected && (
             <>
               <View style={styles.sheetHandle} />
-              <Image
-                source={{ uri: selected.thumb }}
-                style={styles.sheetImg}
-                resizeMode="cover"
-              />
-              <TouchableOpacity style={styles.unpinBtn} onPress={() => { togglePin(selected); closeModal(); }}>
-                <Text style={styles.unpinText}>Unpin</Text>
-              </TouchableOpacity>
+              <View style={styles.imgWrap}>
+                <Image source={{ uri: selected.thumb }} style={styles.sheetImg} resizeMode="cover" />
+                <LinearGradient
+                  colors={['transparent', 'rgba(0,0,0,0.6)']}
+                  style={styles.imgOverlay}
+                />
+                <TouchableOpacity style={styles.unpinBtn} onPress={() => { togglePin(selected); closeModal(); }}>
+                  <Text style={styles.unpinText}>✕  Unpin</Text>
+                </TouchableOpacity>
+              </View>
 
               <ScrollView style={styles.sheetBody} showsVerticalScrollIndicator={false}>
                 {tagsLoading ? (
@@ -175,13 +178,17 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface2,
     alignSelf: 'center', marginTop: 10, marginBottom: 8,
   },
+  imgWrap: { width: '100%', height: 200, position: 'relative' },
   sheetImg: { width: '100%', height: 200 },
+  imgOverlay: { position: 'absolute', bottom: 0, left: 0, right: 0, height: 80 },
   unpinBtn: {
-    alignSelf: 'flex-end', marginTop: 8, marginRight: 14,
-    paddingHorizontal: 12, paddingVertical: 5,
-    borderRadius: radius.full, borderWidth: 1.5, borderColor: colors.surface2,
+    position: 'absolute', bottom: 10, right: 12,
+    paddingHorizontal: 12, paddingVertical: 6,
+    borderRadius: radius.full,
+    backgroundColor: 'rgba(0,0,0,0.55)',
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.15)',
   },
-  unpinText: { color: colors.textDim, fontSize: font.xs },
+  unpinText: { color: 'rgba(255,255,255,0.85)', fontSize: font.xs, fontWeight: '600' },
 
   sheetBody: { flex: 1, padding: 14 },
   loadingRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 20 },

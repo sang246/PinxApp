@@ -6,7 +6,8 @@ import {
 import * as ImagePicker from 'expo-image-picker';
 import { useStore } from '../store';
 import { generateFusionImage } from '../services/api';
-import { colors, font, radius } from '../theme';
+import { colors, font, radius, shadow } from '../theme';
+import GradientButton from '../components/GradientButton';
 
 const { width: SCREEN_W } = Dimensions.get('window');
 
@@ -185,16 +186,13 @@ export default function FusionScreen() {
       )}
 
       {/* ── Generate button ── */}
-      <TouchableOpacity
-        style={[styles.genBtn, generating && styles.genBtnDisabled]}
+      <GradientButton
+        label="Generate Fusion Image"
+        icon="⚡"
         onPress={generate}
-        disabled={generating}
-      >
-        {generating
-          ? <ActivityIndicator color="#fff" />
-          : <Text style={styles.genBtnText}>⚡  Generate Fusion Image</Text>
-        }
-      </TouchableOpacity>
+        loading={generating}
+        style={{ marginTop: 24 }}
+      />
 
       {/* ── Result ── */}
       {resultUri && (
@@ -231,7 +229,7 @@ const styles = StyleSheet.create({
   // Upload
   uploadArea: {
     borderWidth: 2, borderStyle: 'dashed', borderColor: colors.surface2,
-    borderRadius: radius.md, minHeight: 110,
+    borderRadius: radius.lg, minHeight: 110,
     alignItems: 'center', justifyContent: 'center', overflow: 'hidden',
   },
   uploadAreaFilled: { borderStyle: 'solid', borderColor: colors.accent1, minHeight: 160 },
@@ -246,9 +244,10 @@ const styles = StyleSheet.create({
   // Prompt
   textarea: {
     backgroundColor: colors.surface, color: colors.text,
-    borderRadius: radius.md, padding: 12, fontSize: font.md,
+    borderRadius: radius.md, padding: 14, fontSize: font.md,
     borderWidth: 1.5, borderColor: colors.surface2,
-    minHeight: 80, textAlignVertical: 'top',
+    minHeight: 80, textAlignVertical: 'top', lineHeight: 22,
+    ...shadow.sm,
   },
 
   // Palette tags
@@ -294,14 +293,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.accent1, alignItems: 'center', justifyContent: 'center',
   },
   pinCheckText: { color: '#fff', fontSize: 10, fontWeight: '800' },
-
-  // Generate
-  genBtn: {
-    marginTop: 24, padding: 15, borderRadius: radius.md,
-    backgroundColor: colors.accent1, alignItems: 'center',
-  },
-  genBtnDisabled: { opacity: 0.6 },
-  genBtnText:     { color: '#fff', fontSize: font.md, fontWeight: '800' },
 
   // Result
   resultWrap: { marginTop: 20 },

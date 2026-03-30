@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Image, TouchableOpacity, Text, StyleSheet } from 'react-native';
-import { colors, radius } from '../theme';
+import { colors, radius, shadow } from '../theme';
 
 export default function ImageTile({ item, width, onPin, isPinned }) {
   const height = width / (item.aspectRatio || 1);
@@ -29,6 +29,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     backgroundColor: colors.surface2,
     marginBottom: 8,
+    ...shadow.sm,
   },
   img: { width: '100%', height: '100%' },
   pinBtn: {

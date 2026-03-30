@@ -5,7 +5,7 @@ import {
 } from 'react-native';
 import { useStore } from '../store';
 import { searchPexelsImages, searchPexelsVideos } from '../services/api';
-import { colors, font, radius } from '../theme';
+import { colors, font, radius, shadow } from '../theme';
 import ImageTile from '../components/ImageTile';
 import VideoTile from '../components/VideoTile';
 
@@ -192,27 +192,28 @@ export default function ExploreScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.bg },
 
-  searchWrap: { paddingHorizontal: PADDING, paddingTop: 10, paddingBottom: 8 },
+  searchWrap: { paddingHorizontal: PADDING, paddingTop: 12, paddingBottom: 8 },
   searchBox: {
     flexDirection: 'row', alignItems: 'center',
     backgroundColor: colors.surface,
-    borderRadius: radius.md,
-    borderWidth: 1, borderColor: colors.surface2,
-    paddingHorizontal: 12, height: 42,
+    borderRadius: radius.lg,
+    borderWidth: 1.5, borderColor: colors.surface2,
+    paddingHorizontal: 14, height: 46,
+    ...shadow.sm,
   },
-  searchIcon: { fontSize: 14, marginRight: 8 },
+  searchIcon: { fontSize: 14, marginRight: 10, opacity: 0.6 },
   input: { flex: 1, color: colors.text, fontSize: font.md },
-  clearBtn: { color: colors.textDim, fontSize: 14, paddingLeft: 8 },
+  clearBtn: { color: colors.textDim, fontSize: 16, paddingLeft: 10 },
 
-  chips: { paddingHorizontal: PADDING, paddingBottom: 10, gap: 8 },
+  chips: { paddingHorizontal: PADDING, paddingBottom: 12 },
   chip: {
-    paddingHorizontal: 14, paddingVertical: 7,
+    paddingHorizontal: 16, paddingVertical: 8,
     borderRadius: radius.full,
-    backgroundColor: colors.surface,
-    borderWidth: 1, borderColor: colors.surface2,
+    backgroundColor: colors.surface2,
+    borderWidth: 1, borderColor: colors.surface3,
     marginRight: 8,
   },
-  chipText: { color: colors.textDim, fontSize: font.sm },
+  chipText: { color: colors.textDim, fontSize: font.sm, fontWeight: '500' },
 
   scroll: { flex: 1 },
   grid: { padding: PADDING, paddingTop: 4, paddingBottom: 40 },
