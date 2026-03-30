@@ -1,59 +1,39 @@
 import { create } from 'zustand';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as FileSystem from 'expo-file-system';
 
 const STORAGE_KEYS = {
-  pexelsKey: 'mb_pexels_key',
-  openaiKey: 'mb_openai_key',
-  youtubeKey: 'mb_youtube_key',
-  pinned: 'mb_pinned_ids',
+  pexelsKey:   'mb_pexels_key',
+  openaiKey:   'mb_openai_key',
+  youtubeKey:  'mb_youtube_key',
+  pinned:      'mb_pinned_ids',
   pinnedItems: 'mb_pinned_items',
-  palette: 'mb_palette',
+  palette:     'mb_palette',
+  gallery:     'mb_gallery',
 };
 
 export const useStore = create((set, get) => ({
   // API keys
-  pexelsKey: '',
-  openaiKey: '',
+  pexelsKey:  '',
+  openaiKey:  '',
   youtubeKey: '',
 
-  // Search
-  query: '',
-  items: [],
-  loading: false,
-  page: 1,
-  hasMore: true,
-
   // Pins
-  pinned: new Set(),
+  pinned:      new Set(),
   pinnedItems: {},
 
   // Fusion
-  fusionSelected: new Set(),
-  fusionStylings: [],
+  fusionSelected:  new Set(),
+  fusionStylings:  [],
   uploadedImageUri: null,
 
   // Palette
   palette: [],
 
-  // UI
-  activeTab: 'explore',
+  // Gallery
+  gallery: [], // [{ id, uri, prompt, timestamp }]
 
-  // ── Actions ──
-
-  setKeys: (keys) => set(keys),
-
-  setQuery: (query) => set({ query }),
-
-  setItems: (items) => set({ items }),
-
-  appendItems: (newItems) =>
-    set((s) => ({ items: [...s.items, ...newItems] })),
-
-  setLoading: (loading) => set({ loading }),
-
-  setPage: (page) => set({ page }),
-
-  setHasMore: (hasMore) => set({ hasMore }),
+  // ── Pin actions ──
 
   togglePin: (item) =>
     set((s) => {
@@ -71,6 +51,8 @@ export const useStore = create((set, get) => ({
       return { pinned, pinnedItems };
     }),
 
+  // ── Fusion actions ──
+
   toggleFusionSelect: (id) =>
     set((s) => {
       const fusionSelected = new Set(s.fusionSelected);
@@ -80,17 +62,18 @@ export const useStore = create((set, get) => ({
 
   clearFusionSelected: () => set({ fusionSelected: new Set() }),
 
-  addFusionStyling: (tag) =>
-    set((s) =>
-      s.fusionStylings.includes(tag)
-        ? {}
-        : { fusionStylings: [...s.fusionStylings, tag] }
-    ),
+  toggleFusionStyling: (tag) =>
+    set((s) => ({
+      fusionStylings: s.fusionStylings.includes(tag)
+        ? s.fusionStylings.filter((t) => t !== tag)
+        : [...s.fusionStylings, tag],
+    })),
 
-  removeFusionStyling: (tag) =>
-    set((s) => ({ fusionStylings: s.fusionStylings.filter((t) => t !== tag) })),
+  clearFusionStylings: () => set({ fusionStylings: [] }),
 
   setUploadedImageUri: (uri) => set({ uploadedImageUri: uri }),
+
+  // ── Palette actions ──
 
   addToPalette: (tag) =>
     set((s) => {
@@ -107,10 +90,39 @@ export const useStore = create((set, get) => ({
       return { palette };
     }),
 
-  // Load persisted state from AsyncStorage
+  // ── Gallery actions ──
+
+  addToGallery: async (remoteUrl, prompt) => {
+    const id = Date.now().toString();
+    const localUri = FileSystem.documentDirectory + `fusion_${id}.jpg`;
+    try {
+      await FileSystem.downloadAsync(remoteUrl, localUri);
+      const item = { id, uri: localUri, prompt, timestamp: Date.now() };
+      set((s) => {
+        const gallery = [item, ...s.gallery];
+        AsyncStorage.setItem(STORAGE_KEYS.gallery, JSON.stringify(gallery));
+        return { gallery };
+      });
+      return item;
+    } catch (_) {
+      return null;
+    }
+  },
+
+  removeFromGallery: (id) =>
+    set((s) => {
+      const item = s.gallery.find((g) => g.id === id);
+      if (item) FileSystem.deleteAsync(item.uri, { idempotent: true }).catch(() => {});
+      const gallery = s.gallery.filter((g) => g.id !== id);
+      AsyncStorage.setItem(STORAGE_KEYS.gallery, JSON.stringify(gallery));
+      return { gallery };
+    }),
+
+  // ── Bootstrap ──
+
   hydrate: async () => {
     try {
-      const [pexels, openai, youtube, pinIds, pinItems, palette] =
+      const [pexels, openai, youtube, pinIds, pinItems, palette, gallery] =
         await Promise.all([
           AsyncStorage.getItem(STORAGE_KEYS.pexelsKey),
           AsyncStorage.getItem(STORAGE_KEYS.openaiKey),
@@ -118,22 +130,24 @@ export const useStore = create((set, get) => ({
           AsyncStorage.getItem(STORAGE_KEYS.pinned),
           AsyncStorage.getItem(STORAGE_KEYS.pinnedItems),
           AsyncStorage.getItem(STORAGE_KEYS.palette),
+          AsyncStorage.getItem(STORAGE_KEYS.gallery),
         ]);
       set({
-        pexelsKey: pexels || '',
-        openaiKey: openai || '',
-        youtubeKey: youtube || '',
-        pinned: new Set(JSON.parse(pinIds || '[]')),
+        pexelsKey:   pexels  || '',
+        openaiKey:   openai  || '',
+        youtubeKey:  youtube || '',
+        pinned:      new Set(JSON.parse(pinIds   || '[]')),
         pinnedItems: JSON.parse(pinItems || '{}'),
-        palette: JSON.parse(palette || '[]'),
+        palette:     JSON.parse(palette  || '[]'),
+        gallery:     JSON.parse(gallery  || '[]'),
       });
     } catch (_) {}
   },
 
   saveKeys: async ({ pexelsKey, openaiKey, youtubeKey }) => {
     await Promise.all([
-      AsyncStorage.setItem(STORAGE_KEYS.pexelsKey, pexelsKey),
-      AsyncStorage.setItem(STORAGE_KEYS.openaiKey, openaiKey),
+      AsyncStorage.setItem(STORAGE_KEYS.pexelsKey,  pexelsKey),
+      AsyncStorage.setItem(STORAGE_KEYS.openaiKey,  openaiKey),
       AsyncStorage.setItem(STORAGE_KEYS.youtubeKey, youtubeKey),
     ]);
     set({ pexelsKey, openaiKey, youtubeKey });
