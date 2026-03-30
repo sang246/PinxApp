@@ -1,31 +1,41 @@
 import React, { useState } from 'react';
 import {
-  View, Text, FlatList, Image, TouchableOpacity,
-  StyleSheet, Dimensions, ActivityIndicator,
+  View, Text, ScrollView, TouchableOpacity, Image,
+  Modal, ActivityIndicator, StyleSheet, Dimensions,
 } from 'react-native';
 import { useStore } from '../store';
 import { analyseImageTags } from '../services/api';
 import { colors, font, radius } from '../theme';
+import ImageTile from '../components/ImageTile';
 
-const NUM_COLS = 2;
-const GAP = 8;
+const { width: SCREEN_W, height: SCREEN_H } = Dimensions.get('window');
 const PADDING = 12;
-const TILE_WIDTH = (Dimensions.get('window').width - PADDING * 2 - GAP) / NUM_COLS;
+const COL_GAP = 8;
+const COL_W = (SCREEN_W - PADDING * 2 - COL_GAP) / 2;
+
+function toColumns(items) {
+  const left = [], right = [];
+  let lh = 0, rh = 0;
+  for (const item of items) {
+    const h = COL_W / (item.aspectRatio || 1);
+    if (lh <= rh) { left.push(item); lh += h + 8; }
+    else           { right.push(item); rh += h + 8; }
+  }
+  return { left, right };
+}
 
 export default function PinsScreen() {
-  const { pinnedItems, pinned, togglePin, openaiKey, addToPalette, palette } = useStore();
-  const [expanded, setExpanded] = useState(null);
-  const [tags, setTags] = useState({ atmosphere: [], elements: [] });
+  const { pinnedItems, togglePin, openaiKey, addToPalette, palette } = useStore();
+
+  const [selected, setSelected]     = useState(null); // item shown in modal
+  const [tags, setTags]             = useState({ atmosphere: [], elements: [] });
   const [tagsLoading, setTagsLoading] = useState(false);
 
   const items = Object.values(pinnedItems);
+  const { left, right } = toColumns(items);
 
-  const onSelect = async (item) => {
-    if (expanded === item.id) {
-      setExpanded(null);
-      return;
-    }
-    setExpanded(item.id);
+  const openPin = async (item) => {
+    setSelected(item);
     setTags({ atmosphere: [], elements: [] });
     if (!openaiKey) return;
     setTagsLoading(true);
@@ -36,110 +46,162 @@ export default function PinsScreen() {
     setTagsLoading(false);
   };
 
-  const renderTag = (tag) => {
-    const inPalette = palette.includes(tag);
-    return (
-      <TouchableOpacity
-        key={tag}
-        style={[styles.tag, inPalette && styles.tagActive]}
-        onPress={() => addToPalette(tag)}
-      >
-        <Text style={[styles.tagText, inPalette && styles.tagTextActive]}>#{tag}</Text>
-      </TouchableOpacity>
-    );
-  };
+  const closeModal = () => { setSelected(null); setTags({ atmosphere: [], elements: [] }); };
 
-  const renderItem = ({ item, index }) => {
-    const isRight = index % NUM_COLS === 1;
-    const isExpanded = expanded === item.id;
-    return (
-      <View style={[styles.tile, isRight && { marginLeft: GAP }]}>
-        <TouchableOpacity onPress={() => onSelect(item)} activeOpacity={0.85}>
-          <Image source={{ uri: item.thumb }} style={styles.tileImg} resizeMode="cover" />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.unpinBtn} onPress={() => togglePin(item)}>
-          <Text style={styles.unpinText}>✕</Text>
-        </TouchableOpacity>
-        {isExpanded && (
-          <View style={styles.expander}>
-            {tagsLoading ? (
-              <ActivityIndicator color={colors.accent1} />
-            ) : (
-              <>
-                <Text style={styles.expanderTitle}>Atmosphere</Text>
-                <View style={styles.tagRow}>{tags.atmosphere.map(renderTag)}</View>
-                <Text style={[styles.expanderTitle, { marginTop: 10 }]}>Decorative Elements</Text>
-                <View style={styles.tagRow}>{tags.elements.map(renderTag)}</View>
-              </>
-            )}
-          </View>
-        )}
-      </View>
-    );
-  };
+  const renderTile = (item) => (
+    <TouchableOpacity key={item.id} onPress={() => openPin(item)} activeOpacity={0.85}>
+      <ImageTile
+        item={item}
+        width={COL_W}
+        isPinned={true}
+        onPin={() => togglePin(item)}
+      />
+    </TouchableOpacity>
+  );
 
   if (items.length === 0) {
     return (
       <View style={styles.empty}>
-        <Text style={styles.emptyText}>No pins yet — star items in Explore to pin them here.</Text>
+        <Text style={styles.emptyTitle}>No pins yet</Text>
+        <Text style={styles.emptyBody}>Star items in Explore to pin them here.</Text>
       </View>
     );
   }
 
   return (
-    <FlatList
-      data={items}
-      keyExtractor={(item) => item.id}
-      renderItem={renderItem}
-      numColumns={NUM_COLS}
-      contentContainerStyle={styles.grid}
-      style={{ backgroundColor: colors.bg }}
-    />
+    <View style={styles.container}>
+      <ScrollView contentContainerStyle={styles.grid} showsVerticalScrollIndicator={false}>
+        <View style={styles.columns}>
+          <View style={styles.col}>{left.map(renderTile)}</View>
+          <View style={[styles.col, { marginLeft: COL_GAP }]}>{right.map(renderTile)}</View>
+        </View>
+      </ScrollView>
+
+      {/* Tag analysis modal */}
+      <Modal visible={!!selected} animationType="slide" transparent onRequestClose={closeModal}>
+        <TouchableOpacity style={styles.backdrop} activeOpacity={1} onPress={closeModal} />
+        <View style={styles.sheet}>
+          {selected && (
+            <>
+              <View style={styles.sheetHandle} />
+              <Image
+                source={{ uri: selected.thumb }}
+                style={styles.sheetImg}
+                resizeMode="cover"
+              />
+              <TouchableOpacity style={styles.unpinBtn} onPress={() => { togglePin(selected); closeModal(); }}>
+                <Text style={styles.unpinText}>Unpin</Text>
+              </TouchableOpacity>
+
+              <ScrollView style={styles.sheetBody} showsVerticalScrollIndicator={false}>
+                {tagsLoading ? (
+                  <View style={styles.loadingRow}>
+                    <ActivityIndicator color={colors.accent1} />
+                    <Text style={styles.loadingText}>Analysing style...</Text>
+                  </View>
+                ) : (
+                  <>
+                    {!openaiKey && (
+                      <Text style={styles.noKeyHint}>Add an OpenAI key in Settings to generate style tags.</Text>
+                    )}
+                    <TagSection
+                      title="Atmosphere"
+                      tags={tags.atmosphere}
+                      palette={palette}
+                      onAdd={addToPalette}
+                    />
+                    <TagSection
+                      title="Decorative Elements"
+                      tags={tags.elements}
+                      palette={palette}
+                      onAdd={addToPalette}
+                    />
+                  </>
+                )}
+              </ScrollView>
+            </>
+          )}
+        </View>
+      </Modal>
+    </View>
   );
 }
 
+function TagSection({ title, tags, palette, onAdd }) {
+  if (tags.length === 0) return null;
+  return (
+    <View style={styles.tagSection}>
+      <Text style={styles.tagTitle}>{title}</Text>
+      <View style={styles.tagRow}>
+        {tags.map((tag) => {
+          const active = palette.includes(tag);
+          return (
+            <TouchableOpacity
+              key={tag}
+              style={[styles.tag, active && styles.tagActive]}
+              onPress={() => onAdd(tag)}
+            >
+              <Text style={[styles.tagText, active && styles.tagTextActive]}>#{tag}</Text>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
+    </View>
+  );
+}
+
+const SHEET_H = SCREEN_H * 0.72;
+
 const styles = StyleSheet.create({
-  grid: { padding: PADDING, paddingTop: 12 },
-  tile: {
-    width: TILE_WIDTH,
-    marginBottom: GAP,
-    borderRadius: radius.md,
-    overflow: 'hidden',
+  container: { flex: 1, backgroundColor: colors.bg },
+  grid: { padding: PADDING, paddingBottom: 40 },
+  columns: { flexDirection: 'row' },
+  col: { flex: 1 },
+
+  empty: { flex: 1, backgroundColor: colors.bg, alignItems: 'center', justifyContent: 'center', padding: 32 },
+  emptyTitle: { color: colors.text, fontSize: font.lg, fontWeight: '700', marginBottom: 8 },
+  emptyBody: { color: colors.textDim, fontSize: font.sm, textAlign: 'center' },
+
+  backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)' },
+  sheet: {
+    height: SHEET_H,
     backgroundColor: colors.surface,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    overflow: 'hidden',
   },
-  tileImg: { width: '100%', height: TILE_WIDTH * 1.2 },
-  unpinBtn: {
-    position: 'absolute', top: 6, right: 6,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    borderRadius: radius.full,
-    width: 24, height: 24,
-    alignItems: 'center', justifyContent: 'center',
-  },
-  unpinText: { color: colors.white, fontSize: 11 },
-  expander: {
-    padding: 10,
+  sheetHandle: {
+    width: 36, height: 4, borderRadius: 2,
     backgroundColor: colors.surface2,
+    alignSelf: 'center', marginTop: 10, marginBottom: 8,
   },
-  expanderTitle: {
-    fontSize: font.xs,
-    fontWeight: '800',
-    color: colors.textDim,
-    textTransform: 'uppercase',
-    letterSpacing: 1,
-    marginBottom: 6,
+  sheetImg: { width: '100%', height: 200 },
+  unpinBtn: {
+    alignSelf: 'flex-end', marginTop: 8, marginRight: 14,
+    paddingHorizontal: 12, paddingVertical: 5,
+    borderRadius: radius.full, borderWidth: 1.5, borderColor: colors.surface2,
+  },
+  unpinText: { color: colors.textDim, fontSize: font.xs },
+
+  sheetBody: { flex: 1, padding: 14 },
+  loadingRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 20 },
+  loadingText: { color: colors.textDim, fontSize: font.sm, marginLeft: 10 },
+  noKeyHint: { color: colors.textDim, fontSize: font.xs, fontStyle: 'italic', marginBottom: 12 },
+
+  tagSection: { marginBottom: 16 },
+  tagTitle: {
+    fontSize: font.xs, fontWeight: '800', color: colors.textDim,
+    textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8,
   },
   tagRow: { flexDirection: 'row', flexWrap: 'wrap' },
   tag: {
-    paddingHorizontal: 10, paddingVertical: 4,
+    paddingHorizontal: 12, paddingVertical: 5,
     borderRadius: radius.full,
-    borderWidth: 1.5,
-    marginRight: 5, marginBottom: 5,
-    borderColor: colors.surface2,
-    backgroundColor: colors.surface,
+    borderWidth: 1.5, borderColor: colors.surface2,
+    backgroundColor: colors.bg,
+    marginRight: 6, marginBottom: 6,
   },
   tagActive: { backgroundColor: colors.accent1, borderColor: colors.accent1 },
   tagText: { color: colors.textDim, fontSize: font.xs },
-  tagTextActive: { color: colors.white },
-  empty: { flex: 1, backgroundColor: colors.bg, alignItems: 'center', justifyContent: 'center', padding: 32 },
-  emptyText: { color: colors.textDim, fontSize: font.md, textAlign: 'center', lineHeight: 22 },
+  tagTextActive: { color: '#fff' },
 });

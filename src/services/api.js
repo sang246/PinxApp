@@ -13,6 +13,7 @@ export async function searchPexelsImages(query, page = 1, apiKey) {
     title: p.alt || query,
     avgColor: p.avg_color || '#888',
     source: 'pexels',
+    aspectRatio: p.width && p.height ? p.width / p.height : 1,
   }));
 }
 
@@ -32,6 +33,7 @@ export async function searchPexelsVideos(query, page = 1, apiKey) {
       title: v.url?.split('/').filter(Boolean).pop() || query,
       avgColor: '#334',
       source: 'pexels',
+      aspectRatio: v.width && v.height ? v.width / v.height : 16 / 9,
     };
   });
 }
